@@ -95,6 +95,31 @@ public:
     ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
   }
 
+  void visit (AST::ArrayElemsValues &elems)
+  {
+    elems.iterate ([&] (AST::Expr *elem) mutable -> bool {
+      ResolveExpr::go (elem, elems.get_node_id ());
+      return true;
+    });
+  }
+
+  void visit (AST::ArrayExpr &expr)
+  {
+    expr.get_array_elems ()->accept_vis (*this);
+  }
+
+  void visit (AST::ArrayIndexExpr &expr)
+  {
+    ResolveExpr::go (expr.get_array_expr ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_index_expr ().get (), expr.get_node_id ());
+  }
+
+  void visit (AST::ArrayElemsCopied &elems)
+  {
+    // TODO
+    gcc_unreachable ();
+  }
+
 private:
   ResolveExpr (NodeId parent) : ResolverBase (parent) {}
 };

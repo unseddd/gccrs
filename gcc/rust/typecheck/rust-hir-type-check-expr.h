@@ -179,6 +179,28 @@ public:
     infered = lhs->combine (rhs);
   }
 
+  void visit (HIR::ArrayIndexExpr &expr)
+  {
+    expr.get_array_expr ()->accept_vis (*this);
+  }
+
+  void visit (HIR::ArrayExpr &expr) {}
+
+  void visit (HIR::ArrayElemsValues &elems)
+  {
+    std::vector<TyTy::TyBase *> types;
+    elems.iterate ([&] (HIR::Expr *e) mutable -> bool {
+      types.push_back (TypeCheckExpr::Resolve (e));
+      return true;
+    });
+
+    infered = types[0];
+    for (size_t i = 1; i < types.size (); i++)
+      {
+	infered = infered->combine (types.at (i));
+      }
+  }
+
 private:
   TypeCheckExpr () : TypeCheckBase (), infered (nullptr) {}
 
